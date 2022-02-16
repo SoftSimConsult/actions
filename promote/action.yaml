@@ -1,0 +1,34 @@
+name: "Promote"
+description: "Promotes docker image"
+inputs:
+  repository:
+    description: "Deployment repo"
+    required: true
+  environment:
+    description: "Solution to build"
+    required: true
+  service:
+    description: "Service name to promote"
+    required: true
+  tag:
+    description: "Tag name to promote"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout prod
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ inputs.repository }}
+        persist-credentials: false
+        fetch-depth: 0
+        ref: main
+    - name: Update manifests
+      shell: bash
+      run: |
+        sleep 1
+        cat ${{ inputs.environment }}/values.yaml | sed -e "s@${{ inputs.environment }}Image: { tag: .* }@${{ inputs.environment }}Image: { tag: ${{ inputs.tag }} }@g" | tee ${{ inputs.environment }}/values.yaml
+        git config --global user.email "${{ github.actor }}@softsimconsult.com"
+        git config --global user.name ${{ github.actor }}
+        git add .
+        git commit -m "Promoting ${{ inputs.service }} in ${{ inputs.environment }} environment to ${{ inputs.tag }}"

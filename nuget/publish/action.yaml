@@ -1,0 +1,51 @@
+name: "NuGet publish"
+description: "Publishes NuGet packages to feed"
+inputs:
+  solution:
+    description: "Solution to build"
+    required: true
+  repository:
+    description: "NuGet repo"
+    required: true
+  repositoryUsername:
+    description: "NuGet repo username"
+    required: false
+    default: USERNAME
+  repositoryPassword:
+    description: "NuGet repo password"
+    required: false
+    default: ${{ github.token }}
+runs:
+  using: "composite"
+  steps:
+    - uses: SoftSimConsult/actions/gitversion@main
+    - name: "Setup .NET 6"
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: "6.0.x"
+        include-prerelease: true
+    - run: |
+        dotnet nuget add source \
+          --username ${{ inputs.repositoryUsername }} \
+          --password ${{ inputs.repositoryPassword }} \
+          --store-password-in-clear-text \
+          --name feed "${{ inputs.repository }}"
+      shell: bash
+    - run: |
+        dotnet restore ${{ inputs.solution }}
+      shell: bash
+    - run: |
+        dotnet pack ${{ inputs.solution }} \
+          /p:Configuration=Release \
+          /p:PackageVersion=$GITVERSION_NUGETVERSION \
+          --output ./artifacts/nuget
+      shell: bash
+    - run: |
+        dotnet nuget push ./artifacts/nuget/**.nupkg \
+          --api-key ${{ inputs.repositoryPassword }} \
+          --source feed
+      shell: bash
+    - uses: actions/upload-artifact@v1
+      with:
+        name: nuget
+        path: ./artifacts/nuget
