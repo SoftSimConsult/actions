@@ -4,6 +4,9 @@ inputs:
   repository:
     description: "Deployment repo"
     required: true
+  token:
+    description: "Deployment repo token"
+    required: true
   environment:
     description: "Solution to build"
     required: true
@@ -23,6 +26,7 @@ runs:
         persist-credentials: false
         fetch-depth: 0
         ref: main
+        token: ${{ inputs.token }}
     - name: Update manifests
       shell: bash
       run: |
