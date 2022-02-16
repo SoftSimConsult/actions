@@ -31,7 +31,7 @@ runs:
       shell: bash
       run: |
         sleep 1
-        cat ${{ inputs.environment }}/values.yaml | sed -e "s@${{ inputs.environment }}Image: { tag: .* }@${{ inputs.environment }}Image: { tag: ${{ inputs.tag }} }@g" | tee ${{ inputs.environment }}/values.yaml
+        cat ${{ inputs.environment }}/values.yaml | sed -e "s@${{ inputs.service }}Image: { tag: .* }@${{ inputs.service }}Image: { tag: ${{ inputs.tag }} }@g" | tee ${{ inputs.environment }}/values.yaml
         git config --global user.email "${{ github.actor }}@softsimconsult.com"
         git config --global user.name ${{ github.actor }}
         git add .
