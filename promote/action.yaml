@@ -36,3 +36,4 @@ runs:
         git config --global user.name ${{ github.actor }}
         git add .
         git commit -m "Promoting ${{ inputs.service }} in ${{ inputs.environment }} environment to ${{ inputs.tag }}"
+        git push
